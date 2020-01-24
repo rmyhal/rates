@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.rusmyhal.rates.R
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CurrenciesFragment : Fragment() {
 
-    private val viewModel: CurrenciesViewModel by viewModels()
+    private val viewModel: CurrenciesViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
