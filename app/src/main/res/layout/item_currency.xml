@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:foreground="?attr/selectableItemBackground"
     android:orientation="horizontal"
     android:padding="@dimen/item_currency_padding">
 
@@ -42,7 +43,10 @@
         android:id="@+id/inputCurrencyRate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="end"
+        android:hint="@string/item_currency_rate_hint"
         android:inputType="numberDecimal"
+        android:minWidth="@dimen/item_currency_rate_min_width"
         tools:ignore="Autofill,LabelFor"
         tools:text="1183.06" />
 

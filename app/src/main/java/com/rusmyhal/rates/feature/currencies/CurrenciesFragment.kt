@@ -12,10 +12,14 @@ import kotlinx.android.synthetic.main.fragment_currencies.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
+@ExperimentalCoroutinesApi
 class CurrenciesFragment : Fragment() {
 
     private val viewModel: CurrenciesViewModel by viewModel()
-    private val currenciesAdapter = CurrenciesAdapter()
+
+    private val currenciesAdapter = CurrenciesAdapter { currency ->
+        viewModel.selectCurrency(currency)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,9 +32,8 @@ class CurrenciesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecycler()
-
         viewModel.currencies.observe(viewLifecycleOwner, Observer {
-            currenciesAdapter.updateCurrencies(it)
+            currenciesAdapter.submitList(it)
         })
     }
 

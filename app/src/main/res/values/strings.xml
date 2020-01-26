@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Rates</string>
+
+
+    <!--region Currencies-->
+    <string name="item_currency_rate_hint">0</string>
+    <!--endregion-->
+
 </resources>

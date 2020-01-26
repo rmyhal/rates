@@ -8,12 +8,15 @@ import com.rusmyhal.rates.core.ResourcesManager
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
-import java.util.Currency as JavaCurrency
 
+@ExperimentalCoroutinesApi
 class CurrenciesViewModel(
     private val currenciesRepository: CurrenciesRepository,
     private val resourceManager: ResourcesManager
@@ -28,20 +31,17 @@ class CurrenciesViewModel(
         get() = _currencies
 
     private val _currencies = MutableLiveData<List<Currency>>()
-    private val decimalFormat = DecimalFormat("0.00")
+    private val decimalFormat = DecimalFormat("#.##")
 
     private lateinit var currenciesJob: Job
     private var currentCurrencyRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
 
-    @ExperimentalCoroutinesApi
     fun startUpdatingCurrencies() {
         currenciesJob = viewModelScope.launch(Dispatchers.Main) {
             currenciesRepository.fetchCurrenciesRates(currentCurrencyRate.currencyCode)
                 .conflate()
                 .collect {
-                    withContext(Dispatchers.IO) {
-                        _currencies.postValue(mapCurrenciesRates(it))
-                    }
+                    _currencies.value = mapCurrenciesRates(it)
                 }
         }
     }
@@ -50,18 +50,28 @@ class CurrenciesViewModel(
         currenciesJob.cancel()
     }
 
-    private fun mapCurrenciesRates(currenciesRates: List<CurrencyRate>): List<Currency> {
-        val rates = currenciesRates.toMutableList()
-            .apply { add(0, currentCurrencyRate) }
+    fun selectCurrency(currency: Currency) {
+        stopUpdatingCurrencies()
+        currentCurrencyRate = CurrencyRate(currency.code, DEFAULT_CURRENCY_RATE)
+        startUpdatingCurrencies()
+    }
 
-        return rates.map { currencyRate ->
-            val javaCurrency = JavaCurrency.getInstance(currencyRate.currencyCode)
-            Currency(
-                currencyRate.currencyCode,
-                javaCurrency.displayName,
-                decimalFormat.format(currencyRate.rate),
-                resourceManager.getCurrencyFlagResByCode(currencyRate.currencyCode)
-            )
-        }
+    private fun mapCurrenciesRates(currenciesRates: List<CurrencyRate>): List<Currency> {
+        return currenciesRates.toMutableList()
+            .map { currencyRate ->
+                Currency(
+                    currencyRate.currencyCode,
+                    decimalFormat.format(currencyRate.rate),
+                    resourceManager.getCurrencyFlagResByCode(currencyRate.currencyCode)
+                )
+            }.toMutableList().apply {
+                add(
+                    0, Currency(
+                        currentCurrencyRate.currencyCode,
+                        currentCurrencyRate.rate.toString(),
+                        resourceManager.getCurrencyFlagResByCode(currentCurrencyRate.currencyCode)
+                    )
+                )
+            }
     }
 }

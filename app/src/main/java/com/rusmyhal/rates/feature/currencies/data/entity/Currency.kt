@@ -1,10 +1,13 @@
 package com.rusmyhal.rates.feature.currencies.data.entity
 
 import androidx.annotation.DrawableRes
+import java.util.Currency as JavaCurrency
 
 data class Currency(
     val code: String,
-    val displayName: String,
-    val rate: String,
+    var amount: String,
     @DrawableRes val flagResId: Int
-)
+) {
+
+    val displayName: String = JavaCurrency.getInstance(code).displayName
+}
