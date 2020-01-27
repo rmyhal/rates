@@ -1,6 +1,7 @@
 package com.rusmyhal.rates.feature.currencies
 
 import android.os.Bundle
+import android.text.InputFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,12 +10,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rusmyhal.rates.R
 import com.rusmyhal.rates.feature.currencies.CurrenciesDiffCallback.Companion.PAYLOAD_CURRENCY_RATE
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
+import com.rusmyhal.rates.util.DecimalDigitsInputFilter
 import com.rusmyhal.rates.util.showKeyboard
 import kotlinx.android.synthetic.main.item_currency.view.*
 
 
 class CurrenciesAdapter(private val clickListener: (currency: Currency) -> Unit) :
     ListAdapter<Currency, CurrenciesAdapter.CurrencyViewHolder>(CurrenciesDiffCallback()) {
+
+    companion object {
+        private const val RATE_MAX_DIGITS = 2
+        private const val RATE_MAX_LENGTH = 10
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyViewHolder {
         return CurrencyViewHolder(
@@ -62,6 +69,10 @@ class CurrenciesAdapter(private val clickListener: (currency: Currency) -> Unit)
                 }
             }
 
+            itemView.inputCurrencyRate.filters = arrayOf(
+                DecimalDigitsInputFilter(RATE_MAX_DIGITS),
+                InputFilter.LengthFilter(RATE_MAX_LENGTH)
+            )
         }
 
         fun bind(currency: Currency) = with(itemView) {
