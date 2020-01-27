@@ -2,9 +2,11 @@ package com.rusmyhal.rates.feature.currencies
 
 import android.os.Bundle
 import android.text.InputFilter
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.rusmyhal.rates.R
@@ -15,7 +17,10 @@ import com.rusmyhal.rates.util.showKeyboard
 import kotlinx.android.synthetic.main.item_currency.view.*
 
 
-class CurrenciesAdapter(private val clickListener: (currency: Currency) -> Unit) :
+class CurrenciesAdapter(
+    private val clickListener: (currency: Currency) -> Unit,
+    private val onAmountChangeListener: (amount: String) -> Unit
+) :
     ListAdapter<Currency, CurrenciesAdapter.CurrencyViewHolder>(CurrenciesDiffCallback()) {
 
     companion object {
@@ -54,25 +59,35 @@ class CurrenciesAdapter(private val clickListener: (currency: Currency) -> Unit)
 
     inner class CurrencyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+        private lateinit var enterAmountWatcher: TextWatcher
+
         init {
-            itemView.setOnClickListener {
-                itemView.inputCurrencyRate.requestFocus()
-            }
-
-            itemView.inputCurrencyRate.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    clickListener(getItem(adapterPosition))
-                    itemView.inputCurrencyRate.showKeyboard()
-                    itemView.inputCurrencyRate.setSelection(
-                        itemView.inputCurrencyRate.text.toString().length
-                    )
+            with(itemView) {
+                setOnClickListener {
+                    inputCurrencyRate.requestFocus()
                 }
-            }
+                inputCurrencyRate.setOnFocusChangeListener { _, hasFocus ->
+                    if (hasFocus) {
+                        clickListener(getItem(adapterPosition))
+                        inputCurrencyRate.showKeyboard()
+                        inputCurrencyRate.setSelection(
+                            inputCurrencyRate.text.toString().length
+                        )
+                        enterAmountWatcher = inputCurrencyRate.doAfterTextChanged { inputAmount ->
+                            onAmountChangeListener(inputAmount.toString())
+                        }
+                    } else {
+                        if (::enterAmountWatcher.isInitialized) {
+                            inputCurrencyRate.removeTextChangedListener(enterAmountWatcher)
+                        }
+                    }
+                }
 
-            itemView.inputCurrencyRate.filters = arrayOf(
-                DecimalDigitsInputFilter(RATE_MAX_DIGITS),
-                InputFilter.LengthFilter(RATE_MAX_LENGTH)
-            )
+                inputCurrencyRate.filters = arrayOf(
+                    DecimalDigitsInputFilter(RATE_MAX_DIGITS),
+                    InputFilter.LengthFilter(RATE_MAX_LENGTH)
+                )
+            }
         }
 
         fun bind(currency: Currency) = with(itemView) {
@@ -82,11 +97,9 @@ class CurrenciesAdapter(private val clickListener: (currency: Currency) -> Unit)
             setRate(currency.amount)
         }
 
-        fun setRate(newRate: String) {
-            itemView.inputCurrencyRate.setText(newRate)
-
-            if (itemView.inputCurrencyRate.hasFocus()) {
-                itemView.inputCurrencyRate.setSelection(newRate.length)
+        fun setRate(newRate: String) = with(itemView) {
+            if (!inputCurrencyRate.hasFocus()) {
+                inputCurrencyRate.setText(newRate)
             }
         }
     }

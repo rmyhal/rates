@@ -17,9 +17,11 @@ class CurrenciesFragment : Fragment() {
 
     private val viewModel: CurrenciesViewModel by viewModel()
 
-    private val currenciesAdapter = CurrenciesAdapter { currency ->
+    private val currenciesAdapter = CurrenciesAdapter({ currency ->
         viewModel.selectCurrency(currency)
-    }
+    }, { newAmount ->
+        viewModel.onAmountChanged(newAmount)
+    })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,6 +48,11 @@ class CurrenciesFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         viewModel.stopUpdatingCurrencies()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        recyclerCurrencies.adapter = null
     }
 
     private fun setupRecycler() {
