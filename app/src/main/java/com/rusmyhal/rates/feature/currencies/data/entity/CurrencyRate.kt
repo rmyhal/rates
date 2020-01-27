@@ -1,3 +1,3 @@
 package com.rusmyhal.rates.feature.currencies.data.entity
 
-data class CurrencyRate(val currencyCode: String, val rate: Float)
+data class CurrencyRate(val code: String, val rate: Float)

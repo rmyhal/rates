@@ -31,14 +31,16 @@ class CurrenciesViewModel(
         get() = _currencies
 
     private val _currencies = MutableLiveData<List<Currency>>()
-    private val decimalFormat = DecimalFormat("#.##")
+
+    private val decimalFormat = DecimalFormat("0.00")
 
     private lateinit var currenciesJob: Job
-    private var currentCurrencyRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
+    private var baseRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
+    private var currentAmount: Float = baseRate.rate
 
     fun startUpdatingCurrencies() {
         currenciesJob = viewModelScope.launch(Dispatchers.Main) {
-            currenciesRepository.fetchCurrenciesRates(currentCurrencyRate.currencyCode)
+            currenciesRepository.fetchCurrenciesRates(baseRate.code)
                 .conflate()
                 .collect {
                     _currencies.value = mapCurrenciesRates(it)
@@ -51,8 +53,11 @@ class CurrenciesViewModel(
     }
 
     fun selectCurrency(currency: Currency) {
+        if (currency.code == baseRate.code) return
+
         stopUpdatingCurrencies()
-        currentCurrencyRate = CurrencyRate(currency.code, DEFAULT_CURRENCY_RATE)
+        baseRate = CurrencyRate(currency.code, currency.amount.toFloat())
+        currentAmount = baseRate.rate
         startUpdatingCurrencies()
     }
 
@@ -60,16 +65,16 @@ class CurrenciesViewModel(
         return currenciesRates.toMutableList()
             .map { currencyRate ->
                 Currency(
-                    currencyRate.currencyCode,
-                    decimalFormat.format(currencyRate.rate),
-                    resourceManager.getCurrencyFlagResByCode(currencyRate.currencyCode)
+                    currencyRate.code,
+                    decimalFormat.format(currencyRate.rate * currentAmount),
+                    resourceManager.getCurrencyFlagResByCode(currencyRate.code)
                 )
             }.toMutableList().apply {
                 add(
                     0, Currency(
-                        currentCurrencyRate.currencyCode,
-                        currentCurrencyRate.rate.toString(),
-                        resourceManager.getCurrencyFlagResByCode(currentCurrencyRate.currencyCode)
+                        baseRate.code,
+                        decimalFormat.format(baseRate.rate),
+                        resourceManager.getCurrencyFlagResByCode(baseRate.code)
                     )
                 )
             }

@@ -12,10 +12,10 @@ class CurrenciesRepository(private val currenciesApiService: CurrenciesApiServic
         private const val FETCHING_INTERVAL_IN_MILLIS = 1000L
     }
 
-    suspend fun fetchCurrenciesRates(baseCurrency: String? = null): Flow<List<CurrencyRate>> =
+    suspend fun fetchCurrenciesRates(baseCurrencyCode: String? = null): Flow<List<CurrencyRate>> =
         flow {
             while (true) {
-                emit(currenciesApiService.getCurrencies(baseCurrency).currenciesRates
+                emit(currenciesApiService.getCurrencies(baseCurrencyCode).currenciesRates
                     .map { entry ->
                         CurrencyRate(entry.key, entry.value)
                     })
