@@ -12,6 +12,8 @@
         android:layout_width="@dimen/item_currency_logo_size"
         android:layout_height="@dimen/item_currency_logo_size"
         android:scaleType="centerCrop"
+        android:focusableInTouchMode="true"
+        android:focusable="true"
         tools:ignore="ContentDescription"
         tools:src="@tools:sample/avatars" />
 
