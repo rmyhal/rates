@@ -2,8 +2,10 @@ package com.rusmyhal.rates.core
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.rusmyhal.rates.util.test.OpenForTesting
 import java.util.*
 
+@OpenForTesting
 class ResourcesManager(private val context: Context) {
 
     fun getCurrencyFlagResByCode(currencyCode: String): Int {
