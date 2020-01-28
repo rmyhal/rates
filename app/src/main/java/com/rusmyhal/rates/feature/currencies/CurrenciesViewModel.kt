@@ -25,6 +25,7 @@ class CurrenciesViewModel(
     companion object {
         private const val DEFAULT_CURRENCY_CODE = "EUR"
         private const val DEFAULT_CURRENCY_RATE = 1f
+        private const val DEFAULT_AMOUNT_FORMAT_PATTERN = "0.00"
         private const val BASE_CURRENCY_POSITION = 0
         private const val CURRENCIES_FETCHING_RETRY_DELAY_MILLIS = 1000L
     }
@@ -37,7 +38,7 @@ class CurrenciesViewModel(
         get() = _networkErrorMessage
     private val _networkErrorMessage = MutableLiveData<String?>()
 
-    private val rateFormat = DecimalFormat("0.00")
+    private val rateFormat = DecimalFormat(DEFAULT_AMOUNT_FORMAT_PATTERN)
 
     private lateinit var currenciesJob: Job
     private var currenciesRates: List<CurrencyRate> = emptyList()
