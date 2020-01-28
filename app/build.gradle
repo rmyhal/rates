@@ -10,6 +10,10 @@ allOpen {
     annotation("com.rusmyhal.rates.util.test.OpenForTesting")
 }
 
+def keystorePropertiesFile = rootProject.file(".signing/keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -18,15 +22,30 @@ android {
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "ENDPOINT", "\"https://revolut.duckdns.org/\"")
     }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file(keystoreProperties.get("storeFile"))
+            storePassword keystoreProperties.get("storePassword")
+            keyAlias keystoreProperties.get("keyAlias")
+            keyPassword keystoreProperties.get("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
         }
     }
 
