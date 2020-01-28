@@ -8,14 +8,12 @@ import com.rusmyhal.rates.TestUtil
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesApiService
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
@@ -58,20 +56,15 @@ class CurrenciesRepositoryTest {
                     1 -> {
                         results.add(it)
                     }
-                    else -> {
-                        cancel()
-                    }
+                    else -> fail("Should have received only 2 values")
                 }
             }
         }
-        repeat(2) {
-            job.join() // in order to support delay between flow emissions
-        }
+        advanceTimeBy(1_000L) // this will cause delay to resume
         job.cancel()
 
         assertThat(results.size).isEqualTo(2)
         assertThat(results[0]).isEqualTo(listOf(TestUtil.CURRENCY_RATE_1))
         assertThat(results[1]).isEqualTo(listOf(TestUtil.CURRENCY_RATE_1, TestUtil.CURRENCY_RATE_2))
     }
-
 }
