@@ -1,7 +1,7 @@
 package com.rusmyhal.rates.di
 
 import com.rusmyhal.rates.core.NetworkClient
-import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.impl.ResourcesManager
 import com.rusmyhal.rates.core.Schedulers
 import com.rusmyhal.rates.core.impl.AppSchedulers
 import com.rusmyhal.rates.core.impl.RetrofitClient

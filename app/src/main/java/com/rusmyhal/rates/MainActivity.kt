@@ -3,7 +3,7 @@ package com.rusmyhal.rates
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
-import com.rusmyhal.rates.feature.currencies.CurrenciesFragment
+import com.rusmyhal.rates.feature.currencies.ui.CurrenciesFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -15,7 +15,9 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
-                add(R.id.fragmentContainerView, CurrenciesFragment())
+                add(R.id.fragmentContainerView,
+                    CurrenciesFragment()
+                )
             }
         }
     }

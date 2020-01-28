@@ -1,4 +1,4 @@
-package com.rusmyhal.rates.feature.currencies
+package com.rusmyhal.rates.feature.currencies.ui
 
 import android.os.Bundle
 import android.text.InputFilter
@@ -10,7 +10,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.rusmyhal.rates.R
-import com.rusmyhal.rates.feature.currencies.CurrenciesDiffCallback.Companion.PAYLOAD_CURRENCY_RATE
+import com.rusmyhal.rates.feature.currencies.ui.CurrenciesDiffCallback.Companion.PAYLOAD_CURRENCY_RATE
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.util.DecimalDigitsInputFilter
 import com.rusmyhal.rates.util.showKeyboard
@@ -21,7 +21,9 @@ class CurrenciesAdapter(
     private val clickListener: (currency: Currency) -> Unit,
     private val onAmountChangeListener: (amount: String) -> Unit
 ) :
-    ListAdapter<Currency, CurrenciesAdapter.CurrencyViewHolder>(CurrenciesDiffCallback()) {
+    ListAdapter<Currency, CurrenciesAdapter.CurrencyViewHolder>(
+        CurrenciesDiffCallback()
+    ) {
 
     companion object {
         private const val RATE_MAX_DIGITS = 2

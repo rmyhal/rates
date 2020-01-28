@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rusmyhal.rates.R
-import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.impl.ResourcesManager
 import com.rusmyhal.rates.core.Schedulers
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency

@@ -5,7 +5,7 @@ import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.*
 import com.rusmyhal.rates.TestSchedulers
 import com.rusmyhal.rates.TestUtil
-import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.impl.ResourcesManager
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import kotlinx.coroutines.Dispatchers
