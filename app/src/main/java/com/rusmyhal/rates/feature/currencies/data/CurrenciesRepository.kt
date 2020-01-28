@@ -1,11 +1,12 @@
 package com.rusmyhal.rates.feature.currencies.data
 
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
+import com.rusmyhal.rates.util.test.OpenForTesting
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-
+@OpenForTesting
 class CurrenciesRepository(private val currenciesApiService: CurrenciesApiService) {
 
     companion object {

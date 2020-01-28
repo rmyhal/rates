@@ -6,20 +6,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rusmyhal.rates.R
 import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.Schedulers
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.DecimalFormat
 
 @ExperimentalCoroutinesApi
 class CurrenciesViewModel(
     private val currenciesRepository: CurrenciesRepository,
-    private val resourceManager: ResourcesManager
+    private val resourceManager: ResourcesManager,
+    private val schedulers: Schedulers
 ) : ViewModel() {
 
     companion object {
@@ -46,13 +51,12 @@ class CurrenciesViewModel(
     private var currentAmount: Float = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
-        currenciesJob = viewModelScope.launch(Dispatchers.Main) {
+        currenciesJob = viewModelScope.launch(schedulers.default) {
             currenciesRepository.fetchCurrenciesRates(baseCurrencyRate.code)
                 .retryWhen { cause, _ ->
                     // retry only when IOException
                     if (cause is IOException) {
-                        _networkErrorMessage.value =
-                            resourceManager.getString(R.string.currencies_network_error)
+                        _networkErrorMessage.postValue(resourceManager.getString(R.string.currencies_network_error))
                         delay(CURRENCIES_FETCHING_RETRY_DELAY_MILLIS)
                         true
                     } else {
@@ -65,7 +69,7 @@ class CurrenciesViewModel(
                     _currencies.postValue(mapCurrenciesRates(newRates))
 
                     if (_networkErrorMessage.value != null) {
-                        _networkErrorMessage.value = null
+                        _networkErrorMessage.postValue(null)
                     }
                 }
         }
@@ -85,10 +89,12 @@ class CurrenciesViewModel(
     }
 
     fun onAmountChanged(newAmount: String) {
-        currentAmount = newAmount.toFloatOrNull() ?: 0f
-        baseCurrencyRate.rate = currentAmount
+        viewModelScope.launch(schedulers.default) {
+            currentAmount = newAmount.toFloatOrNull() ?: 0f
+            baseCurrencyRate.rate = currentAmount
 
-        _currencies.value = mapCurrenciesRates(currenciesRates)
+            _currencies.postValue(mapCurrenciesRates(currenciesRates))
+        }
     }
 
     private fun mapCurrenciesRates(rates: List<CurrencyRate>): List<Currency> {
