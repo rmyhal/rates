@@ -10,10 +10,13 @@ import com.rusmyhal.rates.core.Schedulers
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.text.DecimalFormat
 
@@ -48,13 +51,12 @@ class CurrenciesViewModel(
     private var currentAmount: Float = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
-        currenciesJob = viewModelScope.launch(schedulers.main) {
+        currenciesJob = viewModelScope.launch(schedulers.default) {
             currenciesRepository.fetchCurrenciesRates(baseCurrencyRate.code)
                 .retryWhen { cause, _ ->
                     // retry only when IOException
                     if (cause is IOException) {
-                        _networkErrorMessage.value =
-                            resourceManager.getString(R.string.currencies_network_error)
+                        _networkErrorMessage.postValue(resourceManager.getString(R.string.currencies_network_error))
                         delay(CURRENCIES_FETCHING_RETRY_DELAY_MILLIS)
                         true
                     } else {
@@ -64,12 +66,10 @@ class CurrenciesViewModel(
                 .conflate()
                 .collect { newRates ->
                     currenciesRates = newRates
-                    withContext(schedulers.default) {
-                        _currencies.postValue(mapCurrenciesRates(newRates))
-                    }
+                    _currencies.postValue(mapCurrenciesRates(newRates))
 
                     if (_networkErrorMessage.value != null) {
-                        _networkErrorMessage.value = null
+                        _networkErrorMessage.postValue(null)
                     }
                 }
         }
