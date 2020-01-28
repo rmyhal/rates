@@ -40,7 +40,7 @@ class CurrenciesRepositoryTest {
     }
 
     @Test
-    fun collectResponse_launch() = runBlockingTest {
+    fun collectResponse_collectFlow() = runBlockingTest {
         whenever(currenciesApiService.getCurrencies(anyOrNull())).thenReturn(
             TestUtil.CURRENCY_RESPONSE_1,
             TestUtil.CURRENCY_RESPONSE_2
