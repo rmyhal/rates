@@ -1,16 +1,19 @@
 package com.rusmyhal.rates.di
 
 import com.rusmyhal.rates.core.NetworkClient
+import com.rusmyhal.rates.core.ResourcesManager
 import com.rusmyhal.rates.core.impl.RetrofitClient
 import com.rusmyhal.rates.feature.currencies.CurrenciesViewModel
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesApiService
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 
 private val coreModule = module {
     single<NetworkClient> { RetrofitClient() }
+    single { ResourcesManager(androidApplication()) }
 }
 private val currenciesModule = module {
     single {
@@ -18,7 +21,7 @@ private val currenciesModule = module {
         CurrenciesRepository(networkClient.createService(CurrenciesApiService::class.java))
     }
 
-    viewModel { CurrenciesViewModel(get()) }
+    viewModel { CurrenciesViewModel(get(), get()) }
 }
 
 val appModules = listOf(coreModule, currenciesModule)
