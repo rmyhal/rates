@@ -1,4 +1,4 @@
-package com.rusmyhal.rates.feature.currencies
+package com.rusmyhal.rates.feature.currencies.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.rusmyhal.rates.R
+import com.rusmyhal.rates.feature.currencies.CurrenciesViewModel
 import kotlinx.android.synthetic.main.fragment_currencies.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -18,13 +19,14 @@ class CurrenciesFragment : Fragment() {
 
     private val viewModel: CurrenciesViewModel by viewModel()
 
-    private val currenciesAdapter = CurrenciesAdapter(
-        clickListener = { currency ->
-            viewModel.selectCurrency(currency)
-        },
-        onAmountChangeListener = { newAmount ->
-            viewModel.onAmountChanged(newAmount)
-        })
+    private val currenciesAdapter =
+        CurrenciesAdapter(
+            clickListener = { currency ->
+                viewModel.selectCurrency(currency)
+            },
+            onAmountChangeListener = { newAmount ->
+                viewModel.onAmountChanged(newAmount)
+            })
 
     private var networkErrorSnackbar: Snackbar? = null
 

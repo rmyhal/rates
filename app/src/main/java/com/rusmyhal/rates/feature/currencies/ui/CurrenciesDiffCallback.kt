@@ -1,4 +1,4 @@
-package com.rusmyhal.rates.feature.currencies
+package com.rusmyhal.rates.feature.currencies.ui
 
 import android.os.Bundle
 import androidx.recyclerview.widget.DiffUtil

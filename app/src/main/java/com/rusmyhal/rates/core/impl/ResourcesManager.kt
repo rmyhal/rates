@@ -1,4 +1,4 @@
-package com.rusmyhal.rates.core
+package com.rusmyhal.rates.core.impl
 
 import android.content.Context
 import androidx.annotation.StringRes
