@@ -43,9 +43,9 @@ class CurrenciesFragment : Fragment() {
 
         viewModel.networkErrorMessage.observe(viewLifecycleOwner, Observer { errorMessage ->
             if (errorMessage != null) {
-                initNetworkErrorSnackbarIfNeeded(errorMessage).run {
-                    if (!this.isShown) {
-                        this.show()
+                initNetworkErrorSnackbarIfNeeded(errorMessage).let { snackbar ->
+                    if (!snackbar.isShown) {
+                        snackbar.show()
                     }
                 }
             } else {

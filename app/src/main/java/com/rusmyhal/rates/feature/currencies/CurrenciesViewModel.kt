@@ -100,19 +100,23 @@ class CurrenciesViewModel(
                     resourceManager.getCurrencyFlagResByCode(currencyRate.code)
                 )
             }.toMutableList().apply {
-                val baseCurrencyAmount =
-                    if (baseCurrencyRate.rate > 0f) {
-                        rateFormat.format(baseCurrencyRate.rate)
-                    } else ""
-
-                add(
-                    BASE_CURRENCY_POSITION, Currency(
-                        baseCurrencyRate.code,
-                        baseCurrencyAmount,
-                        resourceManager.getCurrencyFlagResByCode(baseCurrencyRate.code)
-                    )
-                )
+                addBaseCurrency(this)
             }
+    }
+
+    private fun addBaseCurrency(currencies: MutableList<Currency>) {
+        val baseCurrencyAmount =
+            if (baseCurrencyRate.rate > 0f) {
+                rateFormat.format(baseCurrencyRate.rate)
+            } else ""
+
+        currencies.add(
+            BASE_CURRENCY_POSITION, Currency(
+                baseCurrencyRate.code,
+                baseCurrencyAmount,
+                resourceManager.getCurrencyFlagResByCode(baseCurrencyRate.code)
+            )
+        )
     }
 
     private fun calculateConvertingRate(amount: Float, baseRate: Float): String {
