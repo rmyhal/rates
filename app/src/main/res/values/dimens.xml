@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="item_currency_padding">16dp</dimen>
+    <dimen name="item_currency_code_margin_start">16dp</dimen>
+    <dimen name="item_currency_logo_size">40dp</dimen>
+    <dimen name="item_currency_rate_min_width">40dp</dimen>
+</resources>

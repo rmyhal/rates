@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Rates</string>
+
+
+    <!--region Currencies-->
+    <string name="currencies_network_error">An error occurred while loading rates. Trying to reconnect…</string>
+    <string name="item_currency_rate_hint">0</string>
+    <!--endregion-->
+
 </resources>
