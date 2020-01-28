@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flow
 class CurrenciesRepository(private val currenciesApiService: CurrenciesApiService) {
 
     companion object {
-        private const val FETCHING_INTERVAL_IN_MILLIS = 1000L
+        private const val FETCHING_INTERVAL_MILLIS = 1000L
     }
 
     suspend fun fetchCurrenciesRates(baseCurrencyCode: String? = null): Flow<List<CurrencyRate>> =
@@ -19,7 +19,7 @@ class CurrenciesRepository(private val currenciesApiService: CurrenciesApiServic
                     .map { entry ->
                         CurrencyRate(entry.key, entry.value)
                     })
-                delay(FETCHING_INTERVAL_IN_MILLIS)
+                delay(FETCHING_INTERVAL_MILLIS)
             }
         }
 }

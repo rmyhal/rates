@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.rusmyhal.rates.R
 import kotlinx.android.synthetic.main.fragment_currencies.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +24,8 @@ class CurrenciesFragment : Fragment() {
         viewModel.onAmountChanged(newAmount)
     })
 
+    private var networkErrorSnackbar: Snackbar? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,6 +39,19 @@ class CurrenciesFragment : Fragment() {
         setupRecycler()
         viewModel.currencies.observe(viewLifecycleOwner, Observer {
             currenciesAdapter.submitList(it)
+        })
+
+        viewModel.networkErrorMessage.observe(viewLifecycleOwner, Observer { errorMessage ->
+            if (errorMessage != null) {
+                initNetworkErrorSnackbarIfNeeded(errorMessage).run {
+                    if (!this.isShown) {
+                        this.show()
+                    }
+                }
+            } else {
+                networkErrorSnackbar?.dismiss()
+                networkErrorSnackbar = null
+            }
         })
     }
 
@@ -59,5 +75,16 @@ class CurrenciesFragment : Fragment() {
         recyclerCurrencies.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         recyclerCurrencies.adapter = currenciesAdapter
+    }
+
+    private fun initNetworkErrorSnackbarIfNeeded(errorMessage: String): Snackbar {
+        if (networkErrorSnackbar == null) {
+            networkErrorSnackbar = Snackbar.make(
+                recyclerCurrencies,
+                errorMessage,
+                Snackbar.LENGTH_INDEFINITE
+            )
+        }
+        return networkErrorSnackbar!!
     }
 }

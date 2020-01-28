@@ -1,6 +1,7 @@
 package com.rusmyhal.rates.core
 
 import android.content.Context
+import androidx.annotation.StringRes
 import java.util.*
 
 class ResourcesManager(private val context: Context) {
@@ -12,4 +13,6 @@ class ResourcesManager(private val context: Context) {
             context.packageName
         )
     }
+
+    fun getString(@StringRes resId: Int): String = context.getString(resId)
 }

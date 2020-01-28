@@ -4,16 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rusmyhal.rates.R
 import com.rusmyhal.rates.core.ResourcesManager
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.retryWhen
+import java.io.IOException
 import java.text.DecimalFormat
 
 @ExperimentalCoroutinesApi
@@ -25,27 +25,47 @@ class CurrenciesViewModel(
     companion object {
         private const val DEFAULT_CURRENCY_CODE = "EUR"
         private const val DEFAULT_CURRENCY_RATE = 1f
+        private const val BASE_CURRENCY_POSITION = 0
+        private const val CURRENCIES_FETCHING_RETRY_DELAY_MILLIS = 1000L
     }
 
     val currencies: LiveData<List<Currency>>
         get() = _currencies
-
     private val _currencies = MutableLiveData<List<Currency>>()
 
-    private val decimalFormat = DecimalFormat("#.##")
+    val networkErrorMessage: LiveData<String?>
+        get() = _networkErrorMessage
+    private val _networkErrorMessage = MutableLiveData<String?>()
+
+    private val rateFormat = DecimalFormat("0.00")
 
     private lateinit var currenciesJob: Job
     private var currenciesRates: List<CurrencyRate> = emptyList()
-    private var baseRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
-    private var currentAmount: Float = baseRate.rate
+    private var baseCurrencyRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
+    private var currentAmount: Float = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
         currenciesJob = viewModelScope.launch(Dispatchers.Main) {
-            currenciesRepository.fetchCurrenciesRates(baseRate.code)
+            currenciesRepository.fetchCurrenciesRates(baseCurrencyRate.code)
+                .retryWhen { cause, _ ->
+                    // retry only when IOException
+                    if (cause is IOException) {
+                        _networkErrorMessage.value =
+                            resourceManager.getString(R.string.currencies_network_error)
+                        delay(CURRENCIES_FETCHING_RETRY_DELAY_MILLIS)
+                        true
+                    } else {
+                        false
+                    }
+                }
                 .conflate()
-                .collect { rates ->
-                    currenciesRates = rates
-                    _currencies.postValue(mapCurrenciesRates(rates))
+                .collect { newRates ->
+                    currenciesRates = newRates
+                    _currencies.postValue(mapCurrenciesRates(newRates))
+
+                    if (_networkErrorMessage.value != null) {
+                        _networkErrorMessage.value = null
+                    }
                 }
         }
     }
@@ -55,26 +75,24 @@ class CurrenciesViewModel(
     }
 
     fun selectCurrency(currency: Currency) {
-        if (currency.code == baseRate.code) return
+        if (currency.code == baseCurrencyRate.code) return
 
         stopUpdatingCurrencies()
-        baseRate = CurrencyRate(currency.code, currency.amount.toFloatOrNull() ?: 0f)
-        currentAmount = baseRate.rate
+        baseCurrencyRate = CurrencyRate(currency.code, currency.amount.toFloatOrNull() ?: 0f)
+        currentAmount = baseCurrencyRate.rate
         startUpdatingCurrencies()
     }
 
     fun onAmountChanged(newAmount: String) {
-        currentAmount = if (newAmount.toDoubleOrNull() != null) {
-            newAmount.toFloat()
-        } else {
-            0f
-        }
-        baseRate.rate = currentAmount
+        currentAmount = newAmount.toFloatOrNull() ?: 0f
+        baseCurrencyRate.rate = currentAmount
+
         _currencies.value = mapCurrenciesRates(currenciesRates)
     }
 
-    private fun mapCurrenciesRates(currenciesRates: List<CurrencyRate>): List<Currency> {
-        return currenciesRates.toMutableList()
+    private fun mapCurrenciesRates(rates: List<CurrencyRate>): List<Currency> {
+        if (rates.isEmpty()) return emptyList()
+        return rates
             .map { currencyRate ->
                 Currency(
                     currencyRate.code,
@@ -83,15 +101,15 @@ class CurrenciesViewModel(
                 )
             }.toMutableList().apply {
                 val baseCurrencyAmount =
-                    if (baseRate.rate > 0f) {
-                        decimalFormat.format(baseRate.rate)
+                    if (baseCurrencyRate.rate > 0f) {
+                        rateFormat.format(baseCurrencyRate.rate)
                     } else ""
 
                 add(
-                    0, Currency(
-                        baseRate.code,
+                    BASE_CURRENCY_POSITION, Currency(
+                        baseCurrencyRate.code,
                         baseCurrencyAmount,
-                        resourceManager.getCurrencyFlagResByCode(baseRate.code)
+                        resourceManager.getCurrencyFlagResByCode(baseCurrencyRate.code)
                     )
                 )
             }
@@ -99,6 +117,6 @@ class CurrenciesViewModel(
 
     private fun calculateConvertingRate(amount: Float, baseRate: Float): String {
         if (amount == 0f) return ""
-        return decimalFormat.format(amount * baseRate)
+        return rateFormat.format(amount * baseRate)
     }
 }
