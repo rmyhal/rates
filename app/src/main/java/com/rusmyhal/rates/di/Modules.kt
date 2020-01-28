@@ -2,6 +2,8 @@ package com.rusmyhal.rates.di
 
 import com.rusmyhal.rates.core.NetworkClient
 import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.Schedulers
+import com.rusmyhal.rates.core.impl.AppSchedulers
 import com.rusmyhal.rates.core.impl.RetrofitClient
 import com.rusmyhal.rates.feature.currencies.CurrenciesViewModel
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesApiService
@@ -14,6 +16,7 @@ import org.koin.dsl.module
 private val coreModule = module {
     single<NetworkClient> { RetrofitClient() }
     single { ResourcesManager(androidApplication()) }
+    single<Schedulers> { AppSchedulers() }
 }
 private val currenciesModule = module {
     single {
@@ -21,7 +24,7 @@ private val currenciesModule = module {
         CurrenciesRepository(networkClient.createService(CurrenciesApiService::class.java))
     }
 
-    viewModel { CurrenciesViewModel(get(), get()) }
+    viewModel { CurrenciesViewModel(get(), get(), get()) }
 }
 
 val appModules = listOf(coreModule, currenciesModule)

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rusmyhal.rates.R
 import com.rusmyhal.rates.core.ResourcesManager
+import com.rusmyhal.rates.core.Schedulers
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.Currency
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
@@ -19,7 +20,8 @@ import java.text.DecimalFormat
 @ExperimentalCoroutinesApi
 class CurrenciesViewModel(
     private val currenciesRepository: CurrenciesRepository,
-    private val resourceManager: ResourcesManager
+    private val resourceManager: ResourcesManager,
+    private val schedulers: Schedulers
 ) : ViewModel() {
 
     companion object {
@@ -46,7 +48,7 @@ class CurrenciesViewModel(
     private var currentAmount: Float = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
-        currenciesJob = viewModelScope.launch(Dispatchers.Main) {
+        currenciesJob = viewModelScope.launch(schedulers.main) {
             currenciesRepository.fetchCurrenciesRates(baseCurrencyRate.code)
                 .retryWhen { cause, _ ->
                     // retry only when IOException
@@ -62,7 +64,9 @@ class CurrenciesViewModel(
                 .conflate()
                 .collect { newRates ->
                     currenciesRates = newRates
-                    _currencies.postValue(mapCurrenciesRates(newRates))
+                    withContext(schedulers.default) {
+                        _currencies.postValue(mapCurrenciesRates(newRates))
+                    }
 
                     if (_networkErrorMessage.value != null) {
                         _networkErrorMessage.value = null
