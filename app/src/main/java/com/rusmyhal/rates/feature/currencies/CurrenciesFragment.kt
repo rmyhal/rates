@@ -18,11 +18,13 @@ class CurrenciesFragment : Fragment() {
 
     private val viewModel: CurrenciesViewModel by viewModel()
 
-    private val currenciesAdapter = CurrenciesAdapter({ currency ->
-        viewModel.selectCurrency(currency)
-    }, { newAmount ->
-        viewModel.onAmountChanged(newAmount)
-    })
+    private val currenciesAdapter = CurrenciesAdapter(
+        clickListener = { currency ->
+            viewModel.selectCurrency(currency)
+        },
+        onAmountChangeListener = { newAmount ->
+            viewModel.onAmountChanged(newAmount)
+        })
 
     private var networkErrorSnackbar: Snackbar? = null
 
