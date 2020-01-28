@@ -5,7 +5,7 @@ import java.util.Currency as JavaCurrency
 
 data class Currency(
     val code: String,
-    var amount: String,
+    val amount: String,
     @DrawableRes val flagResId: Int
 ) {
 
