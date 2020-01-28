@@ -89,10 +89,12 @@ class CurrenciesViewModel(
     }
 
     fun onAmountChanged(newAmount: String) {
-        currentAmount = newAmount.toFloatOrNull() ?: 0f
-        baseCurrencyRate.rate = currentAmount
+        viewModelScope.launch(schedulers.default) {
+            currentAmount = newAmount.toFloatOrNull() ?: 0f
+            baseCurrencyRate.rate = currentAmount
 
-        _currencies.value = mapCurrenciesRates(currenciesRates)
+            _currencies.postValue(mapCurrenciesRates(currenciesRates))
+        }
     }
 
     private fun mapCurrenciesRates(rates: List<CurrencyRate>): List<Currency> {
