@@ -48,7 +48,11 @@ class CurrenciesViewModel(
 
     private lateinit var currenciesJob: Job
     private var currenciesRates: List<CurrencyRate> = emptyList()
-    private var baseCurrencyRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE.toBigDecimal())
+    private var baseCurrencyRate = CurrencyRate(
+        currenciesRepository.getCachedCurrencyCode() ?: DEFAULT_CURRENCY_CODE,
+        DEFAULT_CURRENCY_RATE.toBigDecimal()
+    )
+
     private var currentAmount: BigDecimal = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
@@ -83,8 +87,11 @@ class CurrenciesViewModel(
     fun selectCurrency(currency: Currency) {
         if (currency.code == baseCurrencyRate.code) return
 
+        currenciesRepository.saveCurrencyCode(currency.code)
+
         stopUpdatingCurrencies()
-        baseCurrencyRate = CurrencyRate(currency.code, currency.amount.toBigDecimalOrNull() ?: BigDecimal(0))
+        baseCurrencyRate =
+            CurrencyRate(currency.code, currency.amount.toBigDecimalOrNull() ?: BigDecimal(0))
         currentAmount = baseCurrencyRate.rate
         startUpdatingCurrencies()
     }

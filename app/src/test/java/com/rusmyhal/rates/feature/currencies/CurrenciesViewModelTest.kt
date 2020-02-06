@@ -81,6 +81,7 @@ class CurrenciesViewModelTest {
 
     @Test
     fun selectDefaultCurrency_doNothing() = runBlockingTest {
+        verify(repository).getCachedCurrencyCode()
         viewModel.selectCurrency(TestUtil.DEFAULT_CURRENCY)
         verifyNoMoreInteractions(repository)
     }
@@ -94,6 +95,7 @@ class CurrenciesViewModelTest {
         verify(repository).fetchCurrenciesRates(TestUtil.DEFAULT_CURRENCY.code)
 
         viewModel.selectCurrency(TestUtil.CURRENCY_1)
+        verify(repository).saveCurrencyCode(TestUtil.CURRENCY_1.code)
         verify(repository).fetchCurrenciesRates(TestUtil.CURRENCY_1.code)
     }
 
