@@ -17,10 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
-                add(
-                    R.id.fragmentContainerView,
-                    CurrenciesFragment()
-                )
+                replace(R.id.fragmentContainerView, CurrenciesFragment())
             }
         }
     }
