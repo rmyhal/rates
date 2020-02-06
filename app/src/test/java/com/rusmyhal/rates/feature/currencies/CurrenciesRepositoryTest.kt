@@ -82,7 +82,7 @@ class CurrenciesRepositoryTest {
         val currencyCode = "uah"
         whenever(localStorage.getData(anyString())).thenReturn(currencyCode)
 
-        val cachedCode = repository.getCachedCurrencyCode()
+        val cachedCode = repository.getLastSelectedCurrencyCode()
         verify(localStorage).getData(anyString())
         assertThat(cachedCode).isEqualTo(currencyCode)
     }
@@ -94,7 +94,7 @@ class CurrenciesRepositoryTest {
 
         repository.saveCurrencyCode(currencyCode)
         verify(localStorage).saveData("currency_code", currencyCode)
-        repository.getCachedCurrencyCode()
+        repository.getLastSelectedCurrencyCode()
         verifyNoMoreInteractions(localStorage)
     }
 

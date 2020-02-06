@@ -49,7 +49,7 @@ class CurrenciesViewModel(
     private lateinit var currenciesJob: Job
     private var currenciesRates: List<CurrencyRate> = emptyList()
     private var baseCurrencyRate = CurrencyRate(
-        currenciesRepository.getCachedCurrencyCode() ?: DEFAULT_CURRENCY_CODE,
+        currenciesRepository.getLastSelectedCurrencyCode() ?: DEFAULT_CURRENCY_CODE,
         DEFAULT_CURRENCY_RATE.toBigDecimal()
     )
 

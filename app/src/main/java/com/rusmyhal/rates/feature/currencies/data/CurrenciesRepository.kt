@@ -36,6 +36,6 @@ class CurrenciesRepository(
         localStorage.saveData(KEY_SELECTED_CURRENCY_CODE, code)
     }
 
-    fun getCachedCurrencyCode(): String? =
+    fun getLastSelectedCurrencyCode(): String? =
         cachedCurrencyCode ?: localStorage.getData(KEY_SELECTED_CURRENCY_CODE)
 }
