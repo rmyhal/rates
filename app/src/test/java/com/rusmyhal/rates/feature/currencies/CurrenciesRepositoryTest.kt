@@ -1,10 +1,9 @@
 package com.rusmyhal.rates.feature.currencies
 
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockitokotlin2.anyOrNull
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import com.rusmyhal.rates.TestUtil
+import com.rusmyhal.rates.core.Storage
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesApiService
 import com.rusmyhal.rates.feature.currencies.data.CurrenciesRepository
 import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
@@ -16,18 +15,20 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 
 @FlowPreview
 @ExperimentalCoroutinesApi
 class CurrenciesRepositoryTest {
 
     private val currenciesApiService: CurrenciesApiService = mock()
+    private val localStorage: Storage = mock()
 
     private lateinit var repository: CurrenciesRepository
 
     @Before
     fun setup() {
-        repository = CurrenciesRepository(currenciesApiService)
+        repository = CurrenciesRepository(currenciesApiService, localStorage)
     }
 
     @Test
@@ -67,4 +68,34 @@ class CurrenciesRepositoryTest {
         assertThat(results[0]).isEqualTo(listOf(TestUtil.CURRENCY_RATE_1))
         assertThat(results[1]).isEqualTo(listOf(TestUtil.CURRENCY_RATE_1, TestUtil.CURRENCY_RATE_2))
     }
+
+    @Test
+    fun saveCurrencyCode() {
+        val currencyCode = "uah"
+        repository.saveCurrencyCode(currencyCode)
+
+        verify(localStorage).saveData("currency_code", currencyCode)
+    }
+
+    @Test
+    fun getCurrencyCode_fromStorage() {
+        val currencyCode = "uah"
+        whenever(localStorage.getData(anyString())).thenReturn(currencyCode)
+
+        val cachedCode = repository.getLastSelectedCurrencyCode()
+        verify(localStorage).getData(anyString())
+        assertThat(cachedCode).isEqualTo(currencyCode)
+    }
+
+    @Test
+    fun getCurrencyCode_cached() {
+        val currencyCode = "uah"
+        whenever(localStorage.getData(anyString())).thenReturn(currencyCode)
+
+        repository.saveCurrencyCode(currencyCode)
+        verify(localStorage).saveData("currency_code", currencyCode)
+        repository.getLastSelectedCurrencyCode()
+        verifyNoMoreInteractions(localStorage)
+    }
+
 }
