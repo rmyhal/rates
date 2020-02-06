@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.math.BigDecimal
 import java.text.DecimalFormat
 
 @ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ class CurrenciesViewModel(
 
     companion object {
         private const val DEFAULT_CURRENCY_CODE = "EUR"
-        private const val DEFAULT_CURRENCY_RATE = 1f
+        private const val DEFAULT_CURRENCY_RATE = 1
         private const val DEFAULT_AMOUNT_FORMAT_PATTERN = "0.00"
         private const val BASE_CURRENCY_POSITION = 0
         private const val CURRENCIES_FETCHING_RETRY_DELAY_MILLIS = 1000L
@@ -47,8 +48,12 @@ class CurrenciesViewModel(
 
     private lateinit var currenciesJob: Job
     private var currenciesRates: List<CurrencyRate> = emptyList()
-    private var baseCurrencyRate = CurrencyRate(DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_RATE)
-    private var currentAmount: Float = baseCurrencyRate.rate
+    private var baseCurrencyRate = CurrencyRate(
+        currenciesRepository.getLastSelectedCurrencyCode() ?: DEFAULT_CURRENCY_CODE,
+        DEFAULT_CURRENCY_RATE.toBigDecimal()
+    )
+
+    private var currentAmount: BigDecimal = baseCurrencyRate.rate
 
     fun startUpdatingCurrencies() {
         currenciesJob = viewModelScope.launch(schedulers.default) {
@@ -82,15 +87,18 @@ class CurrenciesViewModel(
     fun selectCurrency(currency: Currency) {
         if (currency.code == baseCurrencyRate.code) return
 
+        currenciesRepository.saveCurrencyCode(currency.code)
+
         stopUpdatingCurrencies()
-        baseCurrencyRate = CurrencyRate(currency.code, currency.amount.toFloatOrNull() ?: 0f)
+        baseCurrencyRate =
+            CurrencyRate(currency.code, currency.amount.toBigDecimalOrNull() ?: BigDecimal(0))
         currentAmount = baseCurrencyRate.rate
         startUpdatingCurrencies()
     }
 
     fun onAmountChanged(newAmount: String) {
         viewModelScope.launch(schedulers.default) {
-            currentAmount = newAmount.toFloatOrNull() ?: 0f
+            currentAmount = newAmount.toBigDecimalOrNull() ?: BigDecimal(0)
             baseCurrencyRate.rate = currentAmount
 
             _currencies.postValue(mapCurrenciesRates(currenciesRates))
@@ -113,7 +121,7 @@ class CurrenciesViewModel(
 
     private fun addBaseCurrency(currencies: MutableList<Currency>) {
         val baseCurrencyAmount =
-            if (baseCurrencyRate.rate > 0f) {
+            if (baseCurrencyRate.rate > 0.toBigDecimal()) {
                 rateFormat.format(baseCurrencyRate.rate)
             } else ""
 
@@ -126,8 +134,8 @@ class CurrenciesViewModel(
         )
     }
 
-    private fun calculateConvertingRate(amount: Float, baseRate: Float): String {
-        if (amount == 0f) return ""
-        return rateFormat.format(amount * baseRate)
+    private fun calculateConvertingRate(amount: BigDecimal, baseRate: BigDecimal): String {
+        if (amount.compareTo(baseRate) == 0) return ""
+        return rateFormat.format(amount.multiply(baseRate))
     }
 }
