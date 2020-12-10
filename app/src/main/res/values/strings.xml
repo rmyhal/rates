@@ -4,6 +4,7 @@
 
     <!--region Currencies-->
     <string name="currencies_network_error">An error occurred while loading rates. Trying to reconnect…</string>
+    <string name="currencies_response_error">An error occurred while loading rates.</string>
     <string name="item_currency_rate_hint">0</string>
     <!--endregion-->
 
