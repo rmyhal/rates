@@ -13,6 +13,7 @@ import com.rusmyhal.rates.feature.currencies.data.entity.CurrencyRate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.retryWhen
@@ -67,6 +68,9 @@ class CurrenciesViewModel(
                     } else {
                         false
                     }
+                }
+                .catch {
+                    _networkErrorMessage.postValue(resourceManager.getString(R.string.currencies_response_error))
                 }
                 .conflate()
                 .collect { newRates ->
